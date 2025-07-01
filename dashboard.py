@@ -175,8 +175,13 @@ def update_visuals(start_date, end_date, data):
     high_age = df[(df['ticket_status'].str.lower() == 'open') & (df['age_hours'] > 72)]
     high_age = high_age.sort_values('age_hours', ascending=False)
     high_age_table = dash_table.DataTable(
-        columns=[{'name': i, 'id': i} for i in ['ticket_id', 'title', 'age_hours']],
-        data=high_age[['ticket_id', 'title', 'age_hours']].to_dict('records'),
+        columns=[
+            {'name': 'ticket_id', 'id': 'ticket_id'},
+            {'name': 'title', 'id': 'title'},
+            {'name': 'agent_name', 'id': 'agent_name'},
+            {'name': 'age_hours', 'id': 'age_hours'}
+        ],
+        data=high_age[['ticket_id', 'title', 'agent_name', 'age_hours']].to_dict('records'),
         style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'left'},
         page_size=10
@@ -198,10 +203,17 @@ def update_visuals(start_date, end_date, data):
         df['cf_jira_link'].notnull() &
         (df['cf_jira_link'].astype(str).str.strip() != '') &
         (df['ticket_status'].str.lower().isin(['open', 'onhold']))
-    ]
+    ].copy()
+    jira_tickets['age_days'] = (jira_tickets['age_hours'] // 24).astype(int)
+    jira_tickets = jira_tickets.sort_values('age_days', ascending=False)
     jira_table = dash_table.DataTable(
-        columns=[{'name': i, 'id': i} for i in ['ticket_id', 'ticket_status', 'cf_jira_link']],
-        data=jira_tickets[['ticket_id', 'ticket_status', 'cf_jira_link']].to_dict('records'),
+        columns=[
+            {'name': 'ticket_id', 'id': 'ticket_id'},
+            {'name': 'ticket_status', 'id': 'ticket_status'},
+            {'name': 'cf_jira_link', 'id': 'cf_jira_link'},
+            {'name': 'age_days', 'id': 'age_days'}
+        ],
+        data=jira_tickets[['ticket_id', 'ticket_status', 'cf_jira_link', 'age_days']].to_dict('records'),
         style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'left'},
         page_size=10
