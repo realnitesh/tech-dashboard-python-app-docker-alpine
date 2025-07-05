@@ -85,6 +85,7 @@ def update_dashboard(contents, filename):
 @app.callback(
     Output('download-info', 'children'),
     Output('download-link', 'children'),
+    Output('filtered-table', 'children'),
     Input('tickets-by-date-graph', 'clickData'),
     Input('status-pie-graph', 'clickData'),
     Input('top-categories-graph', 'clickData'),
@@ -101,27 +102,23 @@ def handle_graph_click(tickets_click, status_click, categories_click, subcategor
                       agent_click, tech_click, knowledge_click, week_click, last4_click, 
                       jira_click, data):
     if data is None:
-        return "No data available", ""
+        return "No data available", "", ""
     
-    # Get the triggered input
     ctx = callback_context
     if not ctx.triggered:
-        return "Click on any graph element to download filtered data", ""
+        return "Click on any graph element to view and download filtered data", "", ""
     
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
     click_data = ctx.triggered[0]['value']
     
     if not click_data:
-        return "Click on any graph element to download filtered data", ""
+        return "Click on any graph element to view and download filtered data", "", ""
     
-    # Load the data
     df = pd.read_json(data, orient='split')
-    # Ensure df is a DataFrame (not ndarray)
     if not isinstance(df, pd.DataFrame):
         df = pd.DataFrame(df)
     df = pd.DataFrame(df.reset_index(drop=True))
     
-    # Filter data based on the clicked element
     filtered_df = None
     filter_description = ""
     
@@ -240,14 +237,10 @@ def handle_graph_click(tickets_click, status_click, categories_click, subcategor
         filter_description = f"Jira tickets in week starting {week_label} with status: {status}"
     
     if filtered_df is not None and len(filtered_df) > 0:
-        # Ensure filtered_df is a DataFrame
         filtered_df = pd.DataFrame(filtered_df.reset_index(drop=True))
-        # Create CSV data
         csv_string = filtered_df.to_csv(index=False)
         csv_bytes = csv_string.encode('utf-8')
         csv_b64 = base64.b64encode(csv_bytes).decode()
-        
-        # Create download link
         download_link = html.A(
             f"Download {len(filtered_df)} records as CSV",
             id='download-csv',
@@ -264,10 +257,16 @@ def handle_graph_click(tickets_click, status_click, categories_click, subcategor
                 'borderRadius': '5px'
             }
         )
-        
-        return f"Filter: {filter_description} - Found {len(filtered_df)} records", download_link
+        # Show up to 100 rows in the table
+        table = dash_table.DataTable(
+            columns=[{"name": i, "id": i} for i in filtered_df.columns],
+            data=filtered_df.head(100).to_dict('records'),
+            style_table={"overflowX": "auto", "overflowY": "auto", "maxHeight": "600px"},
+            style_cell={"textAlign": "left", "maxWidth": 250, "whiteSpace": "normal"}
+        )
+        return f"Filter: {filter_description} - Found {len(filtered_df)} records", download_link, table
     
-    return "No data found for the selected filter", ""
+    return "No data found for the selected filter", "", ""
 
 @app.callback(
     Output('visualizations', 'children'),
@@ -524,9 +523,10 @@ def update_visuals(start_date, end_date, data):
             ]),
             dcc.Tab(label='Download Filtered Data', children=[
                 html.Div(id='download-section', children=[
-                    html.H4("Click on any graph element above to download filtered data"),
+                    html.H4("Click on any graph element above to view and download filtered data"),
                     html.Div(id='download-info'),
-                    html.Div(id='download-link')
+                    html.Div(id='download-link'),
+                    html.Div(id='filtered-table')
                 ])
             ]),
             dcc.Tab(label='Insights', children=[
