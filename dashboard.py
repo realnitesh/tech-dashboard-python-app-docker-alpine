@@ -430,9 +430,10 @@ def update_visuals(start_date, end_date, data):
             {'name': 'ticket_id', 'id': 'ticket_id'},
             {'name': 'ticket_status', 'id': 'ticket_status'},
             {'name': 'cf_jira_link', 'id': 'cf_jira_link'},
+            {'name': 'agent_name', 'id': 'agent_name'},
             {'name': 'age_days', 'id': 'age_days'}
         ],
-        data=jira_tickets[['ticket_id', 'ticket_status', 'cf_jira_link', 'age_days']].to_dict('records'),
+        data=jira_tickets[['ticket_id', 'ticket_status', 'cf_jira_link', 'agent_name', 'age_days']].to_dict('records'),
         style_table={'overflowX': 'auto'},
         style_cell={'textAlign': 'left'},
         page_size=10
@@ -531,14 +532,95 @@ def update_visuals(start_date, end_date, data):
             ]),
             dcc.Tab(label='Insights', children=[
                 html.H4("High Ageing Tickets (Open > 72 hours)"),
+                html.Div(id='highage-download-link'),
                 high_age_table,
                 html.H4("Top Customers by Ticket Count (Email ID)"),
                 top_customers_table,
                 html.H4("Tickets with Jira Link"),
+                html.Div(id='jira-download-link'),
                 jira_table
             ])
         ])
     ]
+
+# Callback to provide download link for Jira tickets
+@app.callback(
+    Output('jira-download-link', 'children'),
+    Input('stored-data', 'data')
+)
+def download_jira_link(data):
+    if data is None:
+        return ""
+    df = pd.read_json(data, orient='split')
+    if not isinstance(df, pd.DataFrame):
+        df = pd.DataFrame(df)
+    # Filter for Jira tickets as in the table
+    jira_tickets = df[
+        df['cf_jira_link'].notnull() &
+        (df['cf_jira_link'].astype(str).str.strip() != '') &
+        (df['ticket_status'].str.lower().isin(['open', 'onhold']))
+    ].copy()
+    jira_tickets['age_days'] = (jira_tickets['age_hours'] // 24).astype(int)
+    jira_tickets = jira_tickets.sort_values('age_days', ascending=False)
+    if len(jira_tickets) == 0:
+        return "No Jira tickets to download."
+    csv_string = jira_tickets[['ticket_id', 'ticket_status', 'cf_jira_link', 'agent_name', 'age_days']].to_csv(index=False)
+    csv_bytes = csv_string.encode('utf-8')
+    csv_b64 = base64.b64encode(csv_bytes).decode()
+    download_link = html.A(
+        f"Download Jira Tickets as CSV ({len(jira_tickets)} records)",
+        id='download-jira-csv',
+        href=f'data:text/csv;base64,{csv_b64}',
+        download=f'jira_tickets_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
+        target='_blank',
+        style={
+            'display': 'inline-block',
+            'margin': '10px',
+            'padding': '10px 20px',
+            'backgroundColor': '#28a745',
+            'color': 'white',
+            'textDecoration': 'none',
+            'borderRadius': '5px'
+        }
+    )
+    return download_link
+
+# Callback to provide download link for High Ageing Tickets
+@app.callback(
+    Output('highage-download-link', 'children'),
+    Input('stored-data', 'data')
+)
+def download_highage_link(data):
+    if data is None:
+        return ""
+    df = pd.read_json(data, orient='split')
+    if not isinstance(df, pd.DataFrame):
+        df = pd.DataFrame(df)
+    # Filter for high ageing tickets as in the table
+    high_age = df[(df['ticket_status'].str.lower() == 'open') & (df['age_hours'] > 72)].copy()
+    high_age = high_age.sort_values('age_hours', ascending=False)
+    if len(high_age) == 0:
+        return "No high ageing tickets to download."
+    csv_string = high_age[['ticket_id', 'title', 'agent_name', 'age_hours']].to_csv(index=False)
+    csv_bytes = csv_string.encode('utf-8')
+    csv_b64 = base64.b64encode(csv_bytes).decode()
+    download_link = html.A(
+        f"Download High Ageing Tickets as CSV ({len(high_age)} records)",
+        id='download-highage-csv',
+        href=f'data:text/csv;base64,{csv_b64}',
+        download=f'high_age_tickets_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
+        target='_blank',
+        style={
+            'display': 'inline-block',
+            'margin': '10px',
+            'padding': '10px 20px',
+            'backgroundColor': '#dc3545',
+            'color': 'white',
+            'textDecoration': 'none',
+            'borderRadius': '5px'
+        }
+    )
+    return download_link
 
 if __name__ == '__main__':
     app.run(debug=True)
