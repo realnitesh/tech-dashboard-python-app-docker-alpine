@@ -1,5 +1,6 @@
 streamlit
-pandas
 matplotlib
 dash
+pandas
 plotly
+numpy

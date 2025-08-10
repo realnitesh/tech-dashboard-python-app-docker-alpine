@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import base64
 
+
 app = dash.Dash(__name__)
 app.title = "Tech Support Dashboard"
 
@@ -622,8 +623,10 @@ def download_highage_link(data):
     )
     return download_link
 
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+#    app.run(debug=True)
 
+if __name__ == '__main__':
+    app.run(debug=False, host='0.0.0.0', port=8050)
 
 
