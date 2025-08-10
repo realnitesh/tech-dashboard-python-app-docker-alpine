@@ -9,8 +9,8 @@ Use the automated installer script that handles everything for you:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
-cd tech_dashboard
+git clone https://github.com/realnitesh/tech-dashboard-python-app-docker-alpine.git
+cd tech-dashboard-python-app-docker-alpine
 
 # 2. Make the script executable (Linux/macOS)
 chmod +x docker+dashboard_install.sh
@@ -37,8 +37,8 @@ Use the start script for quick Docker deployment:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
-cd tech_dashboard
+git clone https://github.com/realnitesh/tech-dashboard-python-app-docker-alpine.git
+cd tech-dashboard-python-app-docker-alpine
 
 # 2. Run the start script
 ./start.sh
@@ -177,7 +177,7 @@ docker run -p 8050:8050 tech-dashboard
 docker run -d -p 8050:8050 --name tech-dashboard tech-dashboard
 
 # Use pre-built image
-docker run -p 8050:8050 realnitesh/tech_dashboard
+docker run -p 8050:8050 realnitesh/tech-dashboard-python-app-docker-alpine
 ```
 
 ### **Container Management**
@@ -213,7 +213,7 @@ docker info
 ## 📁 Project Structure
 
 ```
-tech_dashboard/
+tech-dashboard-python-app-docker-alpine/
 ├── dashboard.py                    # Main application file (633 lines)
 ├── requirements.txt                # Python dependencies
 ├── Dockerfile                     # Docker configuration
@@ -287,8 +287,8 @@ docker run -p 8051:8050 tech-dashboard
 ### **Development Setup**
 ```bash
 # Clone repository
-git clone <your-repo-url>
-cd tech_dashboard
+git clone https://github.com/realnitesh/tech-dashboard-python-app-docker-alpine.git
+cd tech-dashboard-python-app-docker-alpine
 
 # Create virtual environment
 python -m venv venv
