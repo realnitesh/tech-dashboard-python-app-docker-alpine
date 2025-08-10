@@ -8,17 +8,22 @@ A comprehensive, interactive dashboard application built with Dash for analyzing
 Use the automated installer script that handles everything for you:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/realnitesh/tech-dashboard-python-app-docker-alpine.git
-cd tech-dashboard-python-app-docker-alpine
+# 1. Make blank directory
+mkdir -p tech_dashboard
 
-# 2. Make the script executable (Linux/macOS)
+# 2. Download the Script from repo
+sudo curl -o tech_dashboard/docker+dashboard_install.sh https://raw.githubusercontent.com/realnitesh/tech-dashboard-python-app-docker-alpine/master/docker+dashboard_install.sh
+
+# 3. Enter into the directory
+cd tech_dashboard
+
+# 4. Make the script executable (Linux/macOS)
 chmod +x docker+dashboard_install.sh
 
-# 3. Run the automated installer
+# 5. Run the automated installer
 ./docker+dashboard_install.sh
 
-# 4. Access your dashboard
+# 6. Access your dashboard
 # Open http://localhost:8050 in your browser
 ```
 

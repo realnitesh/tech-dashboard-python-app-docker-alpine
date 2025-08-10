@@ -41,4 +41,4 @@ fi
 echo "Pulling and running the Dash app container..."
 docker run -d --name tech_dashboard_app -p 8050:8050 realnitesh/tech_dashboard:latest
 
-echo "=== All done! Open http://localhost in your browser. ==="
+echo "=== All done! Open http://localhost:8050 in your browser. ==="
